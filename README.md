@@ -1,4 +1,4 @@
-# emtools - a toolbox for geophysical EM simulation pre- and post-processing
+# emtools - a toolbox for geophysical EM-simulation pre- and post-processing
 
 ## Table of Contents
 - [About](#-about)
