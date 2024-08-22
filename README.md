@@ -1,14 +1,13 @@
-# emtools - a toolbox for geophysical EM-simulation data and model files
+# emtools - a toolbox for geophysical EM-simulation data and model file processing
 
 ## Table of Contents
-- [About](#about)
-- [Installation](#installation)
-- [Plotting EM-data: emtools_data_plot](#plotting)
-- [Examples for emtools_data_plot](#examples)
-- [Questions/Comments/Bugs?](#questions)
-- [Contact](#contact)
+  - [📖About](#about)
+  - [🏗️Installation🚧](#️installation)
+  - [📉Plotting EM-data: emtools\_data\_plot](#plotting-em-data-emtools_data_plot)
+  - [📉Examples for **emtools\_data\_plot**](#examples-for-emtools_data_plot)
+  - [📞Contact](#contact)
 
-## 📖 About 
+## 📖About 
 Geophysical electromagnetic (EM) simulations involve a host of pre- and post-simulation steps
 that prepare, modify, process and analyze simulation inputs and outputs.
 emtools is a suite of tools for many of these tasks:
@@ -32,9 +31,9 @@ available for academic research. See also: *Egbert, G.D., Meqbel, N., and Ritter
 Implementing novel schemes for inversion of 3D EM data in ModEM, the OSU modular EM inversion system. 
 Soc. Expl. Geophys. Tech. Prog. Exp. Abstr.*
 
-## 🏗️ Installation 🚧
+## 🏗️Installation🚧
 Installation of **emtools** is done from a terminal command prompt.
-### 1. ✅ Required auxiliary tools
+### 1. ✅Required auxiliary tools
 Before installation, ensure that the following tools are available on the system where you run **emtools**:
 1. git (also available under https://git-scm.com)
 2. csh
@@ -94,7 +93,7 @@ emtools_data_plot -h
 ```
 to get a manpage-like help screen. Type "q" to exit the help screen.
 
-## Examples for **emtools_data_plot**
+## 📉Examples for **emtools_data_plot**
 Directories with plot examples are contained in the directory
 **${EMTOOLS}/doc/examples/emtools_data_plot/**
 
@@ -213,3 +212,6 @@ emtools_data_plot pred_em1d_iso_on.dat -w yerr_pt_2_ps_0.7_lt_4:26.5% -yr e,e -v
 ```shell 
 emtools_data_plot -k EM1D,Dipole1D csem.em1d csem.di1d -o compare_em1d_dip1d -col b:gray90,r:tan1,i:gray80 -logo ./companylogo.png -view,xpdf
 ```
+
+## 📞Contact
+micha@on.br
