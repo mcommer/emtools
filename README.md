@@ -1,13 +1,12 @@
-# emtools - a toolbox for geophysical EM-simulation pre- and post-processing
+# emtools - a toolbox for geophysical EM-simulation data and model files
 
 ## Table of Contents
-- [About](#-about)
-- [Installation](#-installation)
-- [Plotting EM-data: emtools_data_plot](#-plotting-em-data:-emtools_data_plot)
-- [Examples for emtools_data_plot](#-examples-for-emtools_data_plot)
-- [Questions/Comments/Bugs?](#-questions/comments/bugs?)
-- [License](#-license)
-- [Contact](#%EF%B8%8F-contact)
+- [About](#about)
+- [Installation](#installation)
+- [Plotting EM-data: emtools_data_plot](#plotting)
+- [Examples for emtools_data_plot](#examples)
+- [Questions/Comments/Bugs?](#questions)
+- [Contact](#contact)
 
 ## 📖 About 
 Geophysical electromagnetic (EM) simulations involve a host of pre- and post-simulation steps
@@ -81,6 +80,8 @@ is written after installation:
 # emtools configuration file for user <YOU>
 EMTOOLS: ~/usr/local # uncomment to activate / comment to deactivate
 ```
+
+
 
 ## 📉Plotting EM-data: emtools_data_plot
 **emtools_data_plot** is a tool for plotting data from geophysical electromagnetic (EM) input/output files.
@@ -212,4 +213,3 @@ emtools_data_plot pred_em1d_iso_on.dat -w yerr_pt_2_ps_0.7_lt_4:26.5% -yr e,e -v
 ```shell 
 emtools_data_plot -k EM1D,Dipole1D csem.em1d csem.di1d -o compare_em1d_dip1d -col b:gray90,r:tan1,i:gray80 -logo ./companylogo.png -view,xpdf
 ```
-
