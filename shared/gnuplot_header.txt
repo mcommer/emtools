@@ -1,0 +1,44 @@
+#
+# Gnuplot header
+#
+# Default line/symbol color sequence
+c1="black"
+c2="medium-blue" 
+c3="dark-red"
+c4="dark-green"
+# Subplot settings (default, can be overwritten)
+sx=0.99; sy=0.44 # data subplot size (multiplot: set size)
+# REAL-data subplot
+# "0xffffdd" # background color example
+x1=0.05; y1=0.520 # origin (graph) coordinates
+# IMAG-data subplot
+# "0xffffee" # background color example
+x2=0.05; y2=0.023 # origin (graph) coordinates
+#
+# Output terminal settings
+#set terminal png medium linewidth 1.3
+#set terminal jpeg medium linewidth 1.3
+set lmargin 2; set rmargin 0; set tmargin 0; set bmargin 0 # margins
+# Axis format
+set format "%g"
+set key
+set grid
+# Data plotting style
+set style data lines
+# Logo image: if present, insert into each plot page
+sxlogo=0.24; sylogo=0.082 # size of logo image
+xlogo=0.85; ylogo=-0.0785 # origin (graph) of logo image
+#
+# Gnuplot linetypes:
+#
+lw=1.5
+set linetype 1 lc rgb "black" lw lw
+set linetype 2 lc rgb "dark-violet"   lw lw
+set linetype 3 lc rgb "blue"          lw lw
+set linetype 4 lc rgb "sea-green"     lw lw
+set linetype 5 lc rgb "dark-red"      lw lw
+set linetype 6 lc rgb "dark-cyan"     lw lw
+set linetype 7 lc rgb "mediumpurple3" lw lw
+set linetype 8 lc rgb "pink"       lw lw
+set linetype cycle 8
+#
