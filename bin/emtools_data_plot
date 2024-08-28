@@ -291,7 +291,7 @@ if (${?montage}) then # tile the output graphics
 else
   printf "Creating PDF book, number of plot pages: %i ..." $npages
   ps2pdf ${fout}.ps ${fout}.pdf
-  printf "\b\b\b=> %s" ${fout}.pdf
+  printf "\b\b\b=> %s\n" ${fout}.pdf
   if (${?pdf}) then # "-view" option on: run pdf-viewer
     # The setting with option "-view,PDFVIEWER" overwrites the .emtools setting
     set f=`echo $pdf | awk '{p="0";n=split($1,a,",");if(n>1)p=a[2];print p}'`
