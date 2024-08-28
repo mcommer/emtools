@@ -60,7 +60,7 @@ mkdir -p usr/local
 cd usr/local
 # 3) Clone the repository. Afterwards, you will have ~/usr/local/emtools/
 git clone https://github.com/mcommer/emtools.git
-# 4) Depending on you umask: make the emtools executables executable
+# 4) make the emtools executables executable (if needed, dep. on umask) 
 chmod u+x emtools/bin/*
 ```
 
