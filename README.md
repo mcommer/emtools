@@ -72,7 +72,7 @@ export EMTOOLS=${HOME}/usr/local/emtools
 # add the $EMTOOLS/bin/ directory to your executable-PATH
 export PATH=${PATH}:${EMTOOLS}/bin
 ```
-Alternatively, you can set EMTOOLS via the **emtools** configuration file **${HOME}/.emtools**.
+Alternatively, you can set EMTOOLS via the **emtools** configuration file **${HOME}/.emtools**
 ```shell
 # emtools configuration file for user "me", resides in /home/me/.emtools
 EMTOOLS: /home/me/usr/local/emtools  # uncomment to activate / comment to deactivate
