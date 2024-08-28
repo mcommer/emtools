@@ -58,8 +58,10 @@ cd ~
 # for example /usr/local or /opt (then the next steps might need to be su-done)
 mkdir -p usr/local
 cd usr/local
-# 3) Clone the repository. After that, you will have ~/usr/local/emtools/
+# 3) Clone the repository. Afterwards, you will have ~/usr/local/emtools/
 git clone https://github.com/mcommer/emtools.git
+# 4) Depending on you umask: make the emtools executables executable
+chmod u+x emtools/bin/*
 ```
 
 ### 3. 🛒Export the EMTOOLS shell variable
