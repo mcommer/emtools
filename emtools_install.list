@@ -1,0 +1,12 @@
+README.md
+doc/man
+doc/examples/emtools_data_plot
+shared/VERSION
+shared/emtools_install.list
+bin/emtools_data_plot
+AWK/emtools_data_plot.awk
+AWK/emtools_fconfig.awk
+AWK/emtools_print_version.awk
+AWK/io.awk
+AWK/io_modem.awk
+AWK/math.awk
