@@ -1,0 +1,322 @@
+#!/bin/csh -f
+# Sun Sep  3 10:45:54 -03 2023
+# Wed Sep  6 13:42:02 -03 2023: Added CSEM datatype
+#     Sep 14: Copy to new emtools main dir
+# Last update: 13. Nov 2023
+# Last update before uploading to Github: Tue Aug 13 22:16:04 CEST 2024
+# USER settings: 
+set L_CHK_AWK=1
+
+# No edits below this line
+set myname=emtools_data_plot
+#echo args: ${argv[*]}
+#echo args: $*
+if (${#argv} == 0) then
+  echo Usage: $myname '[OPTIONS] DATAFILE(S)'
+  printf "Type %s -h for the complete manual page (use q to quit manual page)\n" $myname
+  exit
+endif
+
+#
+# Check for EMTOOLS, gawk
+#
+# 1) if EMTOOLS-variable not set: check in emtools-config. file
+set f=${HOME}/.emtools
+if (-e $f) then
+  set fconfig=$f
+  set f=`awk 'BEGIN{s=""}/EMTOOLS:/{if(index($1,"#")==0){split($0,a,":");s=sprintf("setenv %s %s",a[1],a[2])}}END{print s}' $f`
+  set i=`echo $f | awk '{print length($1)}'`
+  if ($i > 0) eval $f
+  #echo EMTOOLS set in .emtools file: $EMTOOLS
+endif
+# Here, EMTOOLS might be set from config. file
+# If EMTOOLS not set: use default path
+if (! ${?EMTOOLS}) set EMTOOLS=${HOME}/usr/local/emtools
+# Now check for emtools installation in EMTOOLS path
+# set AWK library path
+set LIB=${EMTOOLS}/AWK # AWK function lib. path
+set f=${LIB}/${myname}.awk
+if (! -e $f) then
+  set fsta=$SHELL:t
+  if ($fsta =~ *bash* || $fsta =~ *ksh* || $fsta =~ *zsh*) then
+    set g_EXE='export EMTOOLS=/PATH/TO/emtools'
+  else
+    set g_EXE='setenv EMTOOLS /PATH/TO/emtools'
+  endif
+  cat <<EOF
+$myname error: Cannot find auxiliary executables
+Check setting of EMTOOLS variable, currently EMTOOLS=$EMTOOLS
+You can set EMTOOLS with three different methods:
+  1) Using "$g_EXE" from the terminal where you execute $myname
+  2) Using "$g_EXE" in your $fsta initialization file 
+  3) Putting the line "EMTOOLS: /PATH/TO/emtools" into the emtools configuration file (${HOME}/.emtools)
+  Note that 3) overwrites 1) and 2)
+EOF
+  exit
+endif
+# Temp. input/output files
+set ftmp=${EMTOOLS}/tmp/${myname}_tmp1.dat
+
+# 2) gawk
+if ($L_CHK_AWK == 1) then # Check for AWK executable
+  set exe=gawk
+  which $exe >& $ftmp
+  set i=`awk '{print NF; exit}' $ftmp`
+  # ios=0/1: gawk not found / found
+  if ($i > 1) then # not found
+    @ ios=0 # gawk not found
+    if (${?fconfig}) then # check in .emtools
+      set f=`awk -v args=AWK:AWK -f ${LIB}/emtools_fconfig.awk $fconfig`
+      eval $f # set ios=0/1 && set AWK=...
+      which $AWK >& $ftmp
+      set i=`awk '{print NF; exit}' $ftmp`
+      if ($i > 1) @ ios=0
+    endif
+  else
+    set AWK=gawk
+    @ ios=1 # gawk found
+  endif
+  rm -f $ftmp
+  if ($ios == 0) then # gawk not found
+    cat <<EOF 
+$myname error: Gnu-AWK executable ($exe) not found or cannot run
+If $exe is not in your system path, you can set it through putting the line 
+"AWK: /PATH/TO/$exe" into the emtools configuration file (${HOME}/.emtools)
+EOF
+    exit
+  endif
+endif # L_CHK_AWK
+
+#
+# print version
+echo $myname | $AWK -v dir=${EMTOOLS}/shared/VERSION -f ${LIB}/emtools_print_version.awk
+set fsta=$ftmp:r".stat"
+cp /dev/null $ftmp
+# Defaults for input arguments
+set fout_fmt=pdf # output file format (pdf,jpg,png,...)
+set g_EXE=gnuplot
+set datafmt=modem
+set n=1
+set i=0
+while ($n <= ${#argv})
+  switch ($argv[$n])
+    case --version: # Print version and exit
+      goto endz
+      breaksw
+    case -h: # Print help page
+      man ${EMTOOLS}/doc/man/${myname}.1
+      goto endz
+      breaksw
+    case -col: # color settings: "-col b:*,r:*,i:*" (background,real-plot,imag-plot)
+      @ n++
+      printf "g_color: %s\n" $argv[$n] >> $ftmp
+      breaksw
+    case -d*: # Plot differences between two data sets
+      # Options are: -d,-d%,-dr,-da (simple,%,rel.,abs.)
+      printf "g_diff: %s\n" $argv[$n] >> $ftmp
+      breaksw
+    case -fn: # Set global font face,size
+      @ n++
+      printf "g_font: %s\n" $argv[$n] >> $ftmp
+      breaksw
+    case -k: # set key for each subplot: -k KEY1,KEY2,...
+      @ n++
+      printf "g_key: %s\n" $argv[$n] >> $ftmp
+      breaksw
+    case -keep: # keep plot data and scripts (default: erase)
+      @ g_keepdata=1
+      breaksw
+    case -logo: # insert logo image in each plot page
+      @ n++
+      set g_logo=$argv[$n]
+      breaksw
+    case -mont: # montage: sep. output files, create composite image file TODO
+      @ n++
+      set montage=$argv[$n]
+      printf "MONTAGE: %s\n" $montage >> $ftmp
+      printf "Option -mont not available in this version\n"
+    case -o: # Output fileroot (ROOT.dat ROOT.gnu, etc.)
+      @ n++
+      set fout=$argv[$n]
+      breaksw
+    case -r: # Plot data against Rx#,x,y, or z
+      @ n++
+      printf "g_xyz: %s\n" $argv[$n] >> $ftmp
+      breaksw
+    case -sep: # Output file(s) (*.dat *.gnu)
+      @ n++
+      printf "OUTSEP: %s\n" $argv[$n] >> $ftmp
+      set OUTSEP=1
+      breaksw
+    case -t: # input test run without file processing
+      printf "TEST:\n" >> $ftmp
+      breaksw
+    case -v: # Set verbose mode from normal to high
+      printf "VERBOSE: 2\n" >> $ftmp
+      breaksw
+    case -view*: # -view[,xpdf]  -Run PDF-file viewer after plot creation
+      set pdf=$argv[$n]
+      breaksw
+    case -w: # with ... : lines/points data plotting style
+      @ n++
+      printf "g_dstyle: %s\n" $argv[$n] >> $ftmp
+      breaksw
+    case -xr: # Set x-range for subplots
+      @ n++
+      printf "g_xrange: %s\n" $argv[$n] >> $ftmp
+      breaksw
+    case -yr: # Set y-range for subplots
+      @ n++
+      printf "g_yrange: %s\n" $argv[$n] >> $ftmp
+      breaksw
+    case -*: # unknown option
+      printf "%s: option %s unknown\n" $myname $argv[$n] 
+      goto end
+    default:
+      set f=$argv[$n]
+      @ i++ # number of input files
+      if ($i == 1) then
+        set file1=$f
+      else
+        printf "FILE: %s\n" $f >> $ftmp
+      endif 
+      # Check if file exists
+      if (! -e $f) then
+        printf "%s: input file %s does not exist\n" $myname $f
+	goto endz
+      endif
+      breaksw
+  endsw
+  @ n++
+end
+if ($i == 0) then
+  printf "%s: missing data input file(s)\n" $myname
+  goto endz
+endif
+# Add user-settings to $ftmp
+if (! ${?fout}) set fout=$file1:r"_plot"
+printf "OUTFILE: %s\n" $fout >> $ftmp
+
+#
+# Check config. file .emtools for active entries
+#
+if (${?fconfig}) then # if .emtools exists
+  #echo Reading $fconfig
+  # LOGO: Insert logo image into every plot page
+  set f=`$AWK -v args=LOGO:g_logo -f ${LIB}/emtools_fconfig.awk $fconfig`
+  eval $f # set ios=0/1 && set g_logo=...
+  # GNUPLOT: Gnuplot executable
+  set f=`$AWK -v args=GNUPLOT:g_EXE -f ${LIB}/emtools_fconfig.awk $fconfig`
+  eval $f # set g_EXE=...
+  if ($ios == 1) printf "Gnuplot executable set to %s\n" $g_EXE
+  # PDFVIEWER: Set PDF viewer (if unset: set here)
+  set f=`$AWK -v args=PDFVIEWER:pdfviewer -f ${LIB}/emtools_fconfig.awk $fconfig`
+  eval $f # set pdfviewer=...
+endif
+#
+# Check if gnuplot executable has compatible version No. (min. version# 5.0)
+#
+set i=`$g_EXE --version | $AWK '{split($2,a,".");print a[1]a[2]}'`
+if ($i < 50) then # incompatible version
+  echo Current plotting executable: `which $g_EXE`, version: `$g_EXE --version`
+  printf "%s needs version >= 5.0\n" $myname
+  printf "Use configuration-file setting GNUP: to specify your default executable:\n"
+  printf "GNUP: /path/to/gnuplot # path to gnuplot-executable, needs version# >= 5.0\n"
+  goto end
+endif
+
+# If logo image set: check if file exists
+if (${?g_logo}) then # logo set
+  if (-e $g_logo) then # image file exists
+    printf "LOGO: %s\n" $g_logo >> $ftmp
+    printf "Including logo in each plot page, image file: %s\n" $g_logo
+  else
+    printf "%s: logo image not found: %s\n" $myname $g_logo
+    goto end
+  endif
+else
+  set g_logo="N/A" # no logo will be used
+endif
+
+# Gnuplot prologue
+set fgnu=${fout}.gnu
+set fdat=${fout}.dat
+set fsta=${fout}.sta # status after AWK/Gnuplot processing
+if (${?OUTSEP}) then # separate output files
+  set flst=${fout}.lst
+  cp /dev/null $flst
+endif
+# Init output file fdat (plotting data) and fgnu (plotting script)
+printf "# %s: Gnuplot plotdata for data input files\n" $myname > $fdat
+printf "# %s: Gnuplot plotting commands\n# Command line:\n# " $myname > $fgnu
+echo \"$myname ${argv[*]}\" >> $fgnu
+# Insert Gnuplot default header
+cat ${EMTOOLS}/shared/gnuplot_header.txt >> $fgnu
+printf 'flogo="%s"\n' $g_logo >> $fgnu
+
+# Linux system
+printf "SYSTEM: " >> $ftmp
+uname >> $ftmp
+#exit
+#
+# AWK input data processing
+#
+# Set aux. AWK libraries for datafile format: ModEM, EMGeo, etc.
+set f="-f ${LIB}/io.awk -f ${LIB}/io_${datafmt}.awk -f ${LIB}/math.awk -f ${LIB}/${myname}.awk"
+$AWK -v args=$ftmp $f $file1
+# Check for exit status
+set npages=`$AWK '{if(NR==1)print $2}' $fsta`
+printf "=> %s: Gnuplot plot commands\n" $fgnu
+printf "=> %s: Column-formatted plot data for script %s\n" $fdat $fgnu
+set ios=`$AWK '{if(NR==1)print $1}' $fsta`
+if ($ios == 1) then
+  printf "%s: ERROR during processing of data input file(s)\n" $myname
+  goto end
+else if ($ios == 2) then
+  printf "%s: Input OK - exit\n" $myname
+  goto end
+endif
+#
+# Gnuplot processing
+#
+$g_EXE $fgnu
+# Remove progress reporting lines from fgnu
+sed '/#__PP/d' $fgnu > $ftmp
+mv $ftmp $fgnu
+# Final composition of plot output
+if (${?montage}) then # tile the output graphics
+  echo Option montage unavailable
+  #montage `cat $flst | xargs` -geometry +4+4 -tile 2x2 ${fout}.$fout_suf
+  #printf "=> %s\n" ${fout}.$fout_suf
+else
+  printf "Creating PDF book, number of plot pages: %i ..." $npages
+  ps2pdf ${fout}.ps ${fout}.pdf
+  printf "\b\b\b=> %s" ${fout}.pdf
+  if (${?pdf}) then # "-view" option on: run pdf-viewer
+    # The setting with option "-view,PDFVIEWER" overwrites the .emtools setting
+    set f=`echo $pdf | awk '{p="0";n=split($1,a,",");if(n>1)p=a[2];print p}'`
+    if ($f != "0") set pdfviewer=$f # overwrite
+    if (${?pdfviewer}) then # get from command line
+      printf " => Launching PDF-viewer %s\n" $pdfviewer
+      $pdfviewer ${fout}.pdf & # open PDF output file
+    else
+      printf "\nCould not find a PDF-viewer\n"
+    endif
+    printf "\n"    
+  endif
+  rm ${fout}.ps
+endif
+
+end:
+# cleanup
+if (${?fsta}) then
+  rm -f $fsta
+endif
+# cleanup if option "-keep" was not used
+if (! ${?g_keepdata} && ${?fout}) then # option "-keep" was not used
+  foreach f (gnu dat lst sta)
+    rm -f ${fout}.$f
+  end
+endif
+endz:
+rm -f $ftmp
